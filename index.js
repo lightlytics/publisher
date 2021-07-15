@@ -16,12 +16,12 @@ try {
         format: 'Terraform',
         type: 'Github',
         metadata: {
-            base_branch: github.context.payload?.repository?.default_branch,
-            commit_hash: github.context.payload?.head_commit?.id,
+            base_branch: github.context.payload.repository.default_branch,
+            commit_hash: github.context.payload.head_commit.id,
             name: 'Github',
-            pr_id: github.context.payload?.pull_request?.number,
-            repository: github.context.payload?.repository?.full_name,
-            user_name: github.context.payload?.actor
+            pr_id: github.context.payload.pull_request.number,
+            repository: github.context.payload.repository.full_name,
+            user_name: github.context.payload.actor
         }
     }
 
