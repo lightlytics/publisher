@@ -15,12 +15,13 @@ try {
     const source = {
         format: 'Terraform',
         type: 'Github',
-        base_branch: github.context.payload.repository.default_branch,
+        branch: github.context.payload.pull_request.head.ref,
+        base_branch: github.context.payload.pull_request.base.ref,
         commit_hash: github.context.payload.pull_request.head.sha,
         name: 'Github',
         pr_id: github.context.payload.pull_request.number,
         repository: github.context.payload.repository.full_name,
-        user_name: github.context.payload.actor
+        user_name: github.context.payload.pull_request.user.login
     }
 
     const data = {
