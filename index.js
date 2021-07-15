@@ -4,6 +4,8 @@ const got = require('got');
 const fs = require('fs')
 
 try {
+    const payload = JSON.stringify(github.context.payload, undefined, 2)
+    console.log(`The event payload: ${payload}`);
     const terraformPlanPath = core.getInput('plan-json');
     const terraformPlan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
@@ -17,7 +19,7 @@ try {
         type: 'Github',
         metadata: {
             base_branch: github.context.payload.repository.default_branch,
-            commit_hash: github.context.payload.head_commit.id,
+            //commit_hash: github.context.payload.head_commit.id,
             name: 'Github',
             pr_id: github.context.payload.pull_request.number,
             repository: github.context.payload.repository.full_name,
@@ -37,7 +39,6 @@ try {
     }).then(() => {
     }).catch(err => console.log(err));
 
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
     console.log(`The event payload: ${payload}`);
 } catch (error) {
     core.setFailed(error.message);
