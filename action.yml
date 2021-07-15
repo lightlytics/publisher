@@ -1,8 +1,14 @@
 name: 'Publisher'
 description: 'Publishes events to Lightlytics Producer'
 inputs:
+  ll-hostname:
+    description: 'Hostname of Lightlytics environment (example: env.lightlytics.io)'
+    required: true
   plan-json:
     description: 'Path to Terraform plan file'
+    required: true
+  collection-token:
+    description: 'Secret token per customer used for authentication'
     required: true
 runs:
   using: 'node12'
