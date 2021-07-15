@@ -4,7 +4,6 @@ const got = require('got');
 const fs = require('fs')
 
 try {
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
     const terraformPlanPath = core.getInput('plan-json');
     const terraformPlan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
@@ -38,6 +37,7 @@ try {
     }).then(() => {
     }).catch(err => console.log(err));
 
+    const payload = JSON.stringify(github.context.payload, undefined, 2)
     console.log(`The event payload: ${payload}`);
 } catch (error) {
     core.setFailed(error.message);
