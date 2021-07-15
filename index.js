@@ -5,7 +5,7 @@ const fs = require('fs')
 
 try {
     const terraformPlanPath = core.getInput('plan-json');
-    const terraformPlan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
+    const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
     const url = "https://mikelytics.lightops.io/api/v1/collection/terraform"
     const headers = {
@@ -26,7 +26,7 @@ try {
     }
 
     const data = {
-        ...terraformPlan,
+        plan,
         source,
     }
 
