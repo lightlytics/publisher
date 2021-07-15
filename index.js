@@ -5,7 +5,6 @@ const fs = require('fs')
 
 try {
     const payload = JSON.stringify(github.context.payload, undefined, 2)
-    console.log(`The event payload: ${payload}`);
     const terraformPlanPath = core.getInput('plan-json');
     const terraformPlan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
@@ -19,7 +18,7 @@ try {
         type: 'Github',
         metadata: {
             base_branch: github.context.payload.repository.default_branch,
-            //commit_hash: github.context.payload.head_commit.id,
+            commit_hash: github.context.payload.pull_request.head.sha,
             name: 'Github',
             pr_id: github.context.payload.pull_request.number,
             repository: github.context.payload.repository.full_name,
