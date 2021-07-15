@@ -25,7 +25,7 @@ try {
 
     const data = {
         plan,
-        metadata: source,
+        metadata: {source},
     }
 
     const {body} = got.post(url, {
