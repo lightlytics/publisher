@@ -12,22 +12,20 @@ try {
         'X-Lightlytics-Token': 'LKGrQlbyzVqtorTZ4LYJxo267DAZwDUTtqS9j8se9xc'
     }
 
-    const metadata = {
+    const source = {
         format: 'Terraform',
         type: 'Github',
-        metadata: {
-            base_branch: github.context.payload.repository.default_branch,
-            commit_hash: github.context.payload.pull_request.head.sha,
-            name: 'Github',
-            pr_id: github.context.payload.pull_request.number,
-            repository: github.context.payload.repository.full_name,
-            user_name: github.context.payload.actor
-        }
+        base_branch: github.context.payload.repository.default_branch,
+        commit_hash: github.context.payload.pull_request.head.sha,
+        name: 'Github',
+        pr_id: github.context.payload.pull_request.number,
+        repository: github.context.payload.repository.full_name,
+        user_name: github.context.payload.actor
     }
 
     const data = {
         plan,
-        metadata,
+        metadata: source,
     }
 
     const {body} = got.post(url, {
