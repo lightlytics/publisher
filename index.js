@@ -30,11 +30,12 @@ try {
         source,
     }
 
-    const {body} = await got.post(url, {
+    const {body} = got.post(url, {
         json: data,
         responseType: 'json',
         headers
-    });
+    }).then(() => {
+    }).catch(err => console.log(err));
 
     const payload = JSON.stringify(github.context.payload, undefined, 2)
     console.log(`The event payload: ${payload}`);
