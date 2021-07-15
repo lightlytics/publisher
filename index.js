@@ -12,7 +12,7 @@ try {
         'X-Lightlytics-Token': 'LKGrQlbyzVqtorTZ4LYJxo267DAZwDUTtqS9j8se9xc'
     }
 
-    const source = {
+    const metadata = {
         format: 'Terraform',
         type: 'Github',
         metadata: {
@@ -27,7 +27,7 @@ try {
 
     const data = {
         plan,
-        source,
+        metadata,
     }
 
     const {body} = got.post(url, {
