@@ -1,4 +1,7 @@
 name: 'Publisher'
+branding:
+  icon: 'cloud-lightning'
+  color: 'purple'
 description: 'Publishes events to Lightlytics Producer'
 inputs:
   ll-hostname:
