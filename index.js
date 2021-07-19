@@ -3,10 +3,17 @@ const github = require('@actions/github');
 const got = require('got');
 const fs = require('fs')
 
+function removeAwsCredentials(plan) {
+    delete plan['configuration']['provider_config']['aws']['expressions']['access_key']
+    delete plan['configuration']['provider_config']['aws']['expressions']['secret_key']
+}
+
 try {
     const hostname = core.getInput('ll-hostname')
     const terraformPlanPath = core.getInput('plan-json');
     const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
+
+    removeAwsCredentials(plan)
 
     const url = `https://${hostname}/api/v1/collection/terraform`
     const headers = {
