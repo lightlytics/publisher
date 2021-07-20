@@ -13,6 +13,9 @@ inputs:
   collection-token:
     description: 'Secret token per customer used for authentication'
     required: true
+outputs:
+  EventId:
+    description: Returns the published event id
 runs:
   using: 'node12'
   main: 'index.js'
