@@ -15,7 +15,7 @@ try {
 
     removeAwsCredentials(plan)
 
-    const url = `https://${hostname}/api/v1/collection/terraform`
+    const url = `https://${hostname}:4242/api/v1/collection/terraform`
     const headers = {
         'X-Lightlytics-Token': core.getInput('collection-token')
     }
