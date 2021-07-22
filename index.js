@@ -43,7 +43,7 @@ try {
         headers
     }).then((res) => {
         core.setOutput('EventId', res.body.EventId);
-    }).catch(err => console.log(err));
+    });
 } catch (error) {
     core.setFailed(error.message);
 }
