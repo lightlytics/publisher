@@ -42,7 +42,7 @@ try {
         responseType: 'json',
         headers
     }).then((res) => {
-        core.setOutput('EventId', res.body.EventId);
+        core.setOutput('EventId', res.body.eventId);
     }).catch(error => core.setFailed(error.message));
 } catch (error) {
     core.setFailed(error.message);
