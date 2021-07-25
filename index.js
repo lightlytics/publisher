@@ -20,8 +20,6 @@ try {
         'X-Lightlytics-Token': core.getInput('collection-token')
     }
 
-    console.log(github.context)
-
     let source = {}
 
     if (github.context.payload.pull_request != null) {
@@ -41,7 +39,7 @@ try {
             name: 'Github',
             type: 'Github',
             format: 'Terraform',
-            branch: github.context.ref,
+            branch: github.context.ref.replace('refs/heads/',''),
             base_branch: github.context.payload.repository.default_branch,
             commit_hash: github.context.sha,
             pr_id: '',
