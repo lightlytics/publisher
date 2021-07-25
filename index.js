@@ -20,16 +20,18 @@ try {
         'X-Lightlytics-Token': core.getInput('collection-token')
     }
 
+    console.log(github.context)
+
     const source = {
         name: 'Github',
         type: 'Github',
         format: 'Terraform',
-        branch: github.context.payload.pull_request.head.ref,
-        base_branch: github.context.payload.pull_request.base.ref,
-        commit_hash: github.context.payload.pull_request.head.sha,
-        pr_id: github.context.payload.pull_request.number,
-        repository: github.context.payload.repository.full_name,
-        user_name: github.context.payload.pull_request.user.login
+        branch: getSafe(() => github.context.payload.pull_request.head.ref, ''),
+        base_branch: getSafe(() => github.context.payload.pull_request.base.ref, ''),
+        commit_hash: getSafe(() => github.context.payload.pull_request.head.sha, ''),
+        pr_id: getSafe(() => github.context.payload.pull_request.number, ''),
+        repository: getSafe(() => github.context.payload.repository.full_name, ''),
+        user_name: getSafe(() => github.context.payload.pull_request.user.login, '')
     }
 
     const data = {
@@ -46,4 +48,12 @@ try {
     }).catch(error => core.setFailed(error.message));
 } catch (error) {
     core.setFailed(error.message);
+}
+
+function getSafe(fn, defaultVal) {
+    try {
+        return fn();
+    } catch (e) {
+        return defaultVal;
+    }
 }
