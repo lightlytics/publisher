@@ -8,11 +8,14 @@ inputs:
     description: 'Hostname of Lightlytics environment (example: env.lightlytics.io)'
     required: true
   plan-json:
-    description: 'Path to Terraform plan file'
+    description: 'Path to Terraform plan file (JSON format)'
     required: true
   collection-token:
-    description: 'Secret token per customer used for authentication'
+    description: 'Secret token per customer used for authentication with Lightlytics'
     required: true
+  github-token:
+    description: 'GitHub token used to send a comment on Pull requests'
+    required: false
 outputs:
   EventId:
     description: Returns the published event id
