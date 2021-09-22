@@ -5,8 +5,10 @@ const got = require('got');
 const fs = require('fs')
 
 function removeAwsCredentials(plan) {
-    delete plan['configuration']['provider_config']['aws']['expressions']['access_key']
-    delete plan['configuration']['provider_config']['aws']['expressions']['secret_key']
+    if (plan && plan.configuration && plan.configuration.provider_config && plan.configuration.provider_config.aws && plan.configuration.provider_config.aws.expressions) {
+        delete plan['configuration']['provider_config']['aws']['expressions']['access_key']
+        delete plan['configuration']['provider_config']['aws']['expressions']['secret_key']
+    }
 }
 
 try {
