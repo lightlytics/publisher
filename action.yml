@@ -10,6 +10,9 @@ inputs:
   plan-json:
     description: 'Path to Terraform plan file (JSON format)'
     required: true
+  tf-graph:
+    description: 'Path to Terraform graph file (dot format)'
+    required: false
   collection-token:
     description: 'Secret token per customer used for authentication with Lightlytics'
     required: true

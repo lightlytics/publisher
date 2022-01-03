@@ -16,6 +16,12 @@ try {
     const terraformPlanPath = core.getInput('plan-json');
     const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
+    const terraformGraphPath = core.getInput('tf-graph');
+    let graph
+    if (terraformGraphPath) {
+        graph = fs.readFileSync(terraformGraphPath, 'utf8')
+    }
+
     removeAwsCredentials(plan)
 
     const publishUrl = `https://${hostname}/api/v1/collection/terraform`
@@ -28,6 +34,7 @@ try {
 
     const data = {
         plan,
+        graph,
         metadata: {source},
     }
 
