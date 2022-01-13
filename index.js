@@ -44,9 +44,10 @@ try {
         headers
     }).then((res) => {
         const eventId = res.body.eventId
+        const customerId = res.body.customerId
 
         if (isPullRequestTriggered) {
-            addCommentToPullRequest(`https://${hostname}/simulations/${eventId}`)
+            addCommentToPullRequest(`https://${hostname}/w/${customerId}/simulations/${eventId}`)
         }
 
         core.setOutput('EventId', eventId);
