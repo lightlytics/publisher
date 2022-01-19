@@ -2,7 +2,8 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const {Octokit} = require('@octokit/rest');
 const got = require('got');
-const fs = require('fs')
+const fs = require('fs');
+const path = require('path');
 
 function removeAwsCredentials(plan) {
     if (plan && plan.configuration && plan.configuration.provider_config && plan.configuration.provider_config.aws && plan.configuration.provider_config.aws.expressions) {
@@ -12,11 +13,40 @@ function removeAwsCredentials(plan) {
 }
 
 try {
+    const workingDir = core.getInput('working-directory')
+
+    const modulesPath = `${workingDir}/.terraform/modules/modules.json`;
+    const modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
+    const locals = {};
+
+    if (!modules.Modules)
+        modules["Modules"] = [];
+
+    modules["Modules"].push({
+        Key: "root_module",
+        Source: "root_module",
+        Dir: "./"
+    });
+
+    modules.Modules.filter(
+        (module) => module.Key && module.Dir && module.Source
+    ).forEach((module) => {
+        fs.readdirSync(`${workingDir}/${module.Dir}`).forEach((fileName) => {
+            const fileExtension = path.parse(fileName).ext;
+            if (fileExtension !== ".tf") return;
+
+            const filePath = `${workingDir}/${module.Dir}/${fileName}`;
+            const moduleContent = fs.readFileSync(filePath, "utf8");
+
+            getLocalsFromModule(moduleContent, locals, module.Source);
+        });
+    });
+
     const hostname = core.getInput('ll-hostname')
-    const terraformPlanPath = core.getInput('plan-json');
+    const terraformPlanPath = workingDir + core.getInput('plan-json');
     const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
-    const terraformGraphPath = core.getInput('tf-graph');
+    const terraformGraphPath = workingDir + core.getInput('tf-graph');
     let graph
     if (terraformGraphPath) {
         graph = fs.readFileSync(terraformGraphPath, 'utf8')
@@ -33,6 +63,7 @@ try {
     const source = formatGitMetadata(isPullRequestTriggered)
 
     const data = {
+        locals,
         plan,
         graph,
         metadata: {source},
@@ -102,4 +133,35 @@ function formatGitMetadata(isPullRequestTriggered) {
         }
     }
     return source
+}
+
+function getLocalsFromModule(module, locals, moduleName) {
+    let blockCnt = 0;
+    let currentBlockLines = "";
+
+    module.split("\n").forEach((line) => {
+        const sanitizedLine = String(line).trim();
+        if (sanitizedLine.startsWith("#")) return;
+
+        if (blockCnt > 0) {
+            currentBlockLines += line;
+        }
+
+        if (blockCnt > 0 && sanitizedLine === "{") {
+            blockCnt++;
+        }
+
+        if (sanitizedLine === "locals {") {
+            currentBlockLines = "";
+            blockCnt = 1;
+        }
+
+        if (sanitizedLine === "}" && blockCnt > 0) {
+            blockCnt--;
+            if (blockCnt === 0) {
+                if (!locals[moduleName]) locals[moduleName] = []
+                locals[moduleName].push(currentBlockLines);
+            }
+        }
+    });
 }
