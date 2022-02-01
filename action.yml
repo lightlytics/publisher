@@ -25,6 +25,8 @@ inputs:
 outputs:
   EventId:
     description: Returns the published event id
+  simulation-details:
+    description: Returns details of the simulation output (string)
 runs:
   using: 'node12'
   main: 'index.js'

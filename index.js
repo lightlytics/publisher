@@ -93,6 +93,7 @@ ${link}
 
 > _This comment was added automatically by a git workflow to help DevOps teams predict what will be the impact of the proposed change after completing this PR_`
 
+    core.setOutput("simulation-details", pullRequestMessage)
     const octokit = new Octokit({
         auth: core.getInput('github-token')
     })
