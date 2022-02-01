@@ -13,7 +13,7 @@ function removeAwsCredentials(plan) {
 }
 
 try {
-    const workingDir = core.getInput('working-directory')
+    const workingDir = core.getInput('working-directory').replace(/\/$/, '')
 
     const modulesPath = `${workingDir}/.terraform/modules/modules.json`;
     const modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
@@ -43,10 +43,10 @@ try {
     });
 
     const hostname = core.getInput('ll-hostname')
-    const terraformPlanPath = workingDir + core.getInput('plan-json');
+    const terraformPlanPath = core.getInput('plan-json');
     const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
-    const terraformGraphPath = workingDir + core.getInput('tf-graph');
+    const terraformGraphPath = core.getInput('tf-graph');
     let graph
     if (terraformGraphPath) {
         graph = fs.readFileSync(terraformGraphPath, 'utf8')

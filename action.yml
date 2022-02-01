@@ -4,17 +4,20 @@ branding:
   color: 'purple'
 description: 'Publishes events to Lightlytics Producer'
 inputs:
+  working-directory:
+    description: 'Relative path to the directory of which terraform init command executed'
+    required: true
   ll-hostname:
-    description: 'Hostname of Lightlytics environment (example: env.lightlytics.io)'
+    description: 'Hostname of Lightlytics environment (example: env.lightlytics.com)'
     required: true
   plan-json:
-    description: 'Path to Terraform plan file (JSON format)'
+    description: 'Relative path to Terraform plan file (JSON format)'
     required: true
   tf-graph:
-    description: 'Path to Terraform graph file (dot format)'
+    description: 'Relative path to Terraform graph file (dot format)'
     required: false
   collection-token:
-    description: 'Secret token per customer used for authentication with Lightlytics'
+    description: 'Secret token per customer used for authentication with Lightlytics (stored in GitHub)'
     required: true
   github-token:
     description: 'GitHub token used to send a comment on Pull requests'
