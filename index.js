@@ -29,9 +29,9 @@ try {
   });
 
   modules.Modules.filter((module) => module.Key && module.Dir && module.Source)
-    .filter(module => fs.existsSync(`${workingDir}/${module.Dir}`))
+    .filter(module => fs.existsSync(path.normalize(`${workingDir}/${module.Dir}`)))
     .forEach((module) => {
-      fs.readdirSync(`${workingDir}/${module.Dir}`).forEach((fileName) => {
+      fs.readdirSync(path.normalize(`${workingDir}/${module.Dir}`)).forEach((fileName) => {
         const fileExtension = path.parse(fileName).ext;
         if (fileExtension !== ".tf") return;
 
