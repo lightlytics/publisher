@@ -6,163 +6,163 @@ const fs = require('fs');
 const path = require('path');
 
 function removeAwsCredentials(plan) {
-    if (plan && plan.configuration && plan.configuration.provider_config && plan.configuration.provider_config.aws && plan.configuration.provider_config.aws.expressions) {
-        delete plan['configuration']['provider_config']['aws']['expressions']['access_key']
-        delete plan['configuration']['provider_config']['aws']['expressions']['secret_key']
-    }
+  if (plan && plan.configuration && plan.configuration.provider_config && plan.configuration.provider_config.aws && plan.configuration.provider_config.aws.expressions) {
+    delete plan['configuration']['provider_config']['aws']['expressions']['access_key']
+    delete plan['configuration']['provider_config']['aws']['expressions']['secret_key']
+  }
 }
 
 try {
-    const workingDir = core.getInput('working-directory').replace(/\/$/, '')
+  const workingDir = core.getInput('working-directory').replace(/\/$/, '')
 
-    const modulesPath = `${workingDir}/.terraform/modules/modules.json`;
-    const modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
-    const locals = {};
+  const modulesPath = `${workingDir}/.terraform/modules/modules.json`;
+  const modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
+  const locals = {};
 
-    if (!modules.Modules)
-        modules["Modules"] = [];
+  if (!modules.Modules)
+    modules["Modules"] = [];
 
-    modules["Modules"].push({
-        Key: "root_module",
-        Source: "root_module",
-        Dir: "./"
+  modules["Modules"].push({
+    Key: "root_module",
+    Source: "root_module",
+    Dir: "./"
+  });
+
+  modules.Modules.filter((module) => module.Key && module.Dir && module.Source)
+    .filter(module => fs.existsSync(`${workingDir}/${module.Dir}`))
+    .forEach((module) => {
+      fs.readdirSync(`${workingDir}/${module.Dir}`).forEach((fileName) => {
+        const fileExtension = path.parse(fileName).ext;
+        if (fileExtension !== ".tf") return;
+
+        const filePath = `${workingDir}/${module.Dir}/${fileName}`;
+        const moduleContent = fs.readFileSync(filePath, "utf8");
+
+        getLocalsFromModule(moduleContent, locals, module.Source);
+      });
     });
 
-    modules.Modules.filter(
-        (module) => module.Key && module.Dir && module.Source
-    ).forEach((module) => {
-        fs.readdirSync(`${workingDir}/${module.Dir}`).forEach((fileName) => {
-            const fileExtension = path.parse(fileName).ext;
-            if (fileExtension !== ".tf") return;
+  const hostname = core.getInput('ll-hostname')
+  const terraformPlanPath = core.getInput('plan-json');
+  const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
 
-            const filePath = `${workingDir}/${module.Dir}/${fileName}`;
-            const moduleContent = fs.readFileSync(filePath, "utf8");
+  const terraformGraphPath = core.getInput('tf-graph');
+  let graph
+  if (terraformGraphPath) {
+    graph = fs.readFileSync(terraformGraphPath, 'utf8')
+  }
 
-            getLocalsFromModule(moduleContent, locals, module.Source);
-        });
-    });
+  removeAwsCredentials(plan)
 
-    const hostname = core.getInput('ll-hostname')
-    const terraformPlanPath = core.getInput('plan-json');
-    const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
+  const publishUrl = `https://${hostname}/api/v1/collection/terraform`
+  const headers = {
+    'X-Lightlytics-Token': core.getInput('collection-token')
+  }
 
-    const terraformGraphPath = core.getInput('tf-graph');
-    let graph
-    if (terraformGraphPath) {
-        graph = fs.readFileSync(terraformGraphPath, 'utf8')
+  const isPullRequestTriggered = github.context.payload.pull_request != null
+  const source = formatGitMetadata(isPullRequestTriggered)
+
+  const data = {
+    locals,
+    plan,
+    graph,
+    metadata: {source},
+  }
+
+  got.post(publishUrl, {
+    json: data,
+    responseType: 'json',
+    headers
+  }).then((res) => {
+    const eventId = res.body.eventId
+    const customerId = res.body.customerId
+
+    if (isPullRequestTriggered) {
+      addCommentToPullRequest(`https://${hostname}/w/${customerId}/simulations/${eventId}`)
     }
 
-    removeAwsCredentials(plan)
-
-    const publishUrl = `https://${hostname}/api/v1/collection/terraform`
-    const headers = {
-        'X-Lightlytics-Token': core.getInput('collection-token')
-    }
-
-    const isPullRequestTriggered = github.context.payload.pull_request != null
-    const source = formatGitMetadata(isPullRequestTriggered)
-
-    const data = {
-        locals,
-        plan,
-        graph,
-        metadata: {source},
-    }
-
-    got.post(publishUrl, {
-        json: data,
-        responseType: 'json',
-        headers
-    }).then((res) => {
-        const eventId = res.body.eventId
-        const customerId = res.body.customerId
-
-        if (isPullRequestTriggered) {
-            addCommentToPullRequest(`https://${hostname}/w/${customerId}/simulations/${eventId}`)
-        }
-
-        core.setOutput('EventId', eventId);
-    }).catch(error => core.setFailed(error.message));
+    core.setOutput('EventId', eventId);
+  }).catch(error => core.setFailed(error.message));
 } catch (error) {
-    core.setFailed(error.message);
+  core.setFailed(error.message);
 }
 
 function addCommentToPullRequest(link) {
-    const pullRequestMessage = `An execution simulation has been generated by **Lightlytics**, to view this run impact analysis, Visit:
+  const pullRequestMessage = `An execution simulation has been generated by **Lightlytics**, to view this run impact analysis, Visit:
 ${link}
 
 > _This comment was added automatically by a git workflow to help DevOps teams predict what will be the impact of the proposed change after completing this PR_`
 
-    core.setOutput("simulation-details", pullRequestMessage)
-    const octokit = new Octokit({
-        auth: core.getInput('github-token')
-    })
+  core.setOutput("simulation-details", pullRequestMessage)
+  const octokit = new Octokit({
+    auth: core.getInput('github-token')
+  })
 
-    octokit.issues.createComment({
-        ...github.context.repo,
-        issue_number: github.context.payload.pull_request.number,
-        body: pullRequestMessage
-    }).catch(err => console.log(`failed to send message on PR: ${err.message}`));
+  octokit.issues.createComment({
+    ...github.context.repo,
+    issue_number: github.context.payload.pull_request.number,
+    body: pullRequestMessage
+  }).catch(err => console.log(`failed to send message on PR: ${err.message}`));
 }
 
 function formatGitMetadata(isPullRequestTriggered) {
-    let source = {}
+  let source = {}
 
-    if (isPullRequestTriggered) {
-        source = {
-            name: 'Github',
-            type: 'Github',
-            format: 'Terraform',
-            branch: github.context.payload.pull_request.head.ref,
-            base_branch: github.context.payload.pull_request.base.ref,
-            commit_hash: github.context.payload.pull_request.head.sha,
-            pr_id: github.context.payload.pull_request.number,
-            repository: github.context.payload.repository.full_name,
-            user_name: github.context.payload.pull_request.user.login
-        }
-    } else {
-        source = {
-            name: 'Github',
-            type: 'Github',
-            format: 'Terraform',
-            branch: github.context.ref.replace('refs/heads/', ''),
-            base_branch: github.context.payload.repository.default_branch,
-            commit_hash: github.context.sha,
-            pr_id: '',
-            repository: github.context.payload.repository.full_name,
-            user_name: github.context.actor
-        }
+  if (isPullRequestTriggered) {
+    source = {
+      name: 'Github',
+      type: 'Github',
+      format: 'Terraform',
+      branch: github.context.payload.pull_request.head.ref,
+      base_branch: github.context.payload.pull_request.base.ref,
+      commit_hash: github.context.payload.pull_request.head.sha,
+      pr_id: github.context.payload.pull_request.number,
+      repository: github.context.payload.repository.full_name,
+      user_name: github.context.payload.pull_request.user.login
     }
-    return source
+  } else {
+    source = {
+      name: 'Github',
+      type: 'Github',
+      format: 'Terraform',
+      branch: github.context.ref.replace('refs/heads/', ''),
+      base_branch: github.context.payload.repository.default_branch,
+      commit_hash: github.context.sha,
+      pr_id: '',
+      repository: github.context.payload.repository.full_name,
+      user_name: github.context.actor
+    }
+  }
+  return source
 }
 
 function getLocalsFromModule(module, locals, moduleName) {
-    let blockCnt = 0;
-    let currentBlockLines = "";
+  let blockCnt = 0;
+  let currentBlockLines = "";
 
-    module.split("\n").forEach((line) => {
-        const sanitizedLine = String(line).trim();
-        if (sanitizedLine.startsWith("#")) return;
+  module.split("\n").forEach((line) => {
+    const sanitizedLine = String(line).trim();
+    if (sanitizedLine.startsWith("#")) return;
 
-        if (blockCnt > 0) {
-            currentBlockLines += line;
-        }
+    if (blockCnt > 0) {
+      currentBlockLines += line;
+    }
 
-        if (blockCnt > 0 && sanitizedLine === "{") {
-            blockCnt++;
-        }
+    if (blockCnt > 0 && sanitizedLine === "{") {
+      blockCnt++;
+    }
 
-        if (sanitizedLine === "locals {") {
-            currentBlockLines = "";
-            blockCnt = 1;
-        }
+    if (sanitizedLine === "locals {") {
+      currentBlockLines = "";
+      blockCnt = 1;
+    }
 
-        if (sanitizedLine === "}" && blockCnt > 0) {
-            blockCnt--;
-            if (blockCnt === 0) {
-                if (!locals[moduleName]) locals[moduleName] = []
-                locals[moduleName].push(currentBlockLines);
-            }
-        }
-    });
+    if (sanitizedLine === "}" && blockCnt > 0) {
+      blockCnt--;
+      if (blockCnt === 0) {
+        if (!locals[moduleName]) locals[moduleName] = []
+        locals[moduleName].push(currentBlockLines);
+      }
+    }
+  });
 }
