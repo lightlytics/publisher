@@ -15,8 +15,11 @@ function removeAwsCredentials(plan) {
 try {
   const workingDir = core.getInput('working-directory').replace(/\/$/, '')
 
-  const modulesPath = `${workingDir}/.terraform/modules/modules.json`;
-  const modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
+  const modulesPath = path.normalize(`${workingDir}/.terraform/modules/modules.json`);
+  let modules = {}
+  if (fs.existsSync(modulesPath)) {
+    modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
+  }
   const locals = {};
 
   if (!modules.Modules)
