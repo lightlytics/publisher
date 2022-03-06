@@ -1,10 +1,7 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const {Octokit} = require('@octokit/rest');
-const got = require('got');
-const fs = require('fs');
-const path = require('path');
-const {publish} = require('lightlytics-publisher-core')
+import core from '@actions/core'
+import github from '@actions/github'
+import {Octokit} from '@octokit/rest'
+import {publish} from 'lightlytics-publisher-core'
 
 try {
   const apiUrl = core.getInput('ll-hostname')

@@ -28,5 +28,5 @@ outputs:
   simulation-details:
     description: Returns details of the simulation output (string)
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'
