@@ -1,9 +1,11 @@
 {
   "name": "lightlytics-publisher-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Core shared logic of Lightlytics publisher",
-  "main": "src/index.js",
+  "source": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "babel src/index.js -d dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,5 +20,10 @@
   "homepage": "https://github.com/lightlytics/publisher-core#readme",
   "dependencies": {
     "got": "^12.0.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11"
   }
 }
