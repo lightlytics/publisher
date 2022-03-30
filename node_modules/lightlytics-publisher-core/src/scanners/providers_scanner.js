@@ -13,6 +13,7 @@ export function providersScanner(addData) {
     if (sanitizedLine.startsWith('module "')) {
       moduleName = sanitizedLine.match(/"([^"]+)"/)[1];
       blockCnt = 1;
+      providersBlockLines = "";
     } else if (blockCnt > 0 && sanitizedLine.includes("{")) {
       blockCnt += (sanitizedLine.match(/{/g) || []).length;
     }
@@ -20,7 +21,6 @@ export function providersScanner(addData) {
     // find the providers block and add the block lines to the providersBlockLines until the end of block
     if (blockCnt > 0 && sanitizedLine.startsWith("providers = {")) {
       providers = true;
-      providersBlockLines = "";
     } else if (providers && !sanitizedLine.includes("}")) {
       providersBlockLines += line;
     }
