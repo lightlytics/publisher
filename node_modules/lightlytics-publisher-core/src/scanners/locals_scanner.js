@@ -1,4 +1,4 @@
-export function localsCollector(addData) {
+export function localsScanner(addData) {
   let blockCnt = 0;
   let currentBlockLines = "";
 

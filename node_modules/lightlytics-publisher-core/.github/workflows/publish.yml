@@ -13,7 +13,6 @@ jobs:
         with:
           node-version: 16
       - run: yarn
-      - run: yarn build
       - name: Publish to npm
         uses: pascalgn/npm-publish-action@1.3.3
         env:
