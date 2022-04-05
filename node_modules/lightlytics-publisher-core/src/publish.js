@@ -81,14 +81,14 @@ export async function publish({
           const providersProcessor = providersScanner(
             addData("providers", "object")
           );
-          const policiesProccessor = policiesScanner(
+          const policiesProcessor = policiesScanner(
             addData("policies", "object")
           );
 
           moduleContent.split("\n").forEach((line) => {
             localsProcessor(line);
             providersProcessor(line);
-            policiesProccessor(line);
+            policiesProcessor(line);
           });
         }
       );
