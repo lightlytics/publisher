@@ -1,91 +1,31 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const {Octokit} = require('@octokit/rest');
-const got = require('got');
-const fs = require('fs');
-const path = require('path');
-
-function removeAwsCredentials(plan) {
-  if (plan && plan.configuration && plan.configuration.provider_config && plan.configuration.provider_config.aws && plan.configuration.provider_config.aws.expressions) {
-    delete plan['configuration']['provider_config']['aws']['expressions']['access_key']
-    delete plan['configuration']['provider_config']['aws']['expressions']['secret_key']
-  }
-}
+import core from '@actions/core'
+import github from '@actions/github'
+import {Octokit} from '@octokit/rest'
+import {publish} from 'lightlytics-publisher-core'
 
 try {
-  const workingDir = core.getInput('working-directory').replace(/\/$/, '')
-
-  const modulesPath = path.normalize(`${workingDir}/.terraform/modules/modules.json`);
-  let modules = {}
-  if (fs.existsSync(modulesPath)) {
-    modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
-  }
-  const locals = {};
-
-  if (!modules.Modules)
-    modules["Modules"] = [];
-
-  modules["Modules"].push({
-    Key: "root_module",
-    Source: "root_module",
-    Dir: "./"
-  });
-
-  modules.Modules.filter((module) => module.Key && module.Dir && module.Source)
-    .filter(module => fs.existsSync(path.normalize(`${workingDir}/${module.Dir}`)))
-    .forEach((module) => {
-      fs.readdirSync(path.normalize(`${workingDir}/${module.Dir}`)).forEach((fileName) => {
-        const fileExtension = path.parse(fileName).ext;
-        if (fileExtension !== ".tf") return;
-
-        const filePath = `${workingDir}/${module.Dir}/${fileName}`;
-        const moduleContent = fs.readFileSync(filePath, "utf8");
-
-        getLocalsFromModule(moduleContent, locals, module.Source);
-      });
-    });
-
-  const hostname = core.getInput('ll-hostname')
-  const terraformPlanPath = core.getInput('plan-json');
-  const plan = JSON.parse(fs.readFileSync(terraformPlanPath, 'utf8'))
-
-  const terraformGraphPath = core.getInput('tf-graph');
-  let graph
-  if (terraformGraphPath) {
-    graph = fs.readFileSync(terraformGraphPath, 'utf8')
-  }
-
-  removeAwsCredentials(plan)
-
-  const publishUrl = `https://${hostname}/api/v1/collection/terraform`
-  const headers = {
-    'X-Lightlytics-Token': core.getInput('collection-token')
-  }
+  const apiUrl = core.getInput('ll-hostname')
+  const tfWorkingDir = core.getInput('working-directory').replace(/\/$/, '')
+  const tfPlan = core.getInput('plan-json');
+  const tfGraph = core.getInput('tf-graph');
+  const collectionToken = core.getInput('collection-token')
 
   const isPullRequestTriggered = github.context.payload.pull_request != null
   const source = formatGitMetadata(isPullRequestTriggered)
+  const metadata = {source}
 
-  const data = {
-    locals,
-    plan,
-    graph,
-    metadata: {source},
-  }
-
-  got.post(publishUrl, {
-    json: data,
-    responseType: 'json',
-    headers
-  }).then((res) => {
-    const eventId = res.body.eventId
-    const customerId = res.body.customerId
-
-    if (isPullRequestTriggered) {
-      addCommentToPullRequest(`https://${hostname}/w/${customerId}/simulations/${eventId}`)
-    }
-
-    core.setOutput('EventId', eventId);
-  }).catch(error => core.setFailed(error.message));
+  publish({
+    apiUrl,
+    tfWorkingDir,
+    tfPlan,
+    tfGraph,
+    collectionToken,
+    metadata
+  })
+    .then(({eventId, customerId}) => {
+      addCommentToPullRequest(`https://${apiUrl}/w/${customerId}/simulations/${eventId}`)
+      core.setOutput('EventId', eventId);
+    })
 } catch (error) {
   core.setFailed(error.message);
 }
