@@ -23,7 +23,9 @@ try {
     metadata
   })
     .then(({eventId, customerId}) => {
-      addCommentToPullRequest(`https://${apiUrl}/w/${customerId}/simulations/${eventId}`)
+      if (isPullRequestTriggered) {
+        addCommentToPullRequest(`https://${apiUrl}/w/${customerId}/simulations/${eventId}`)
+      }
       core.setOutput('EventId', eventId);
     })
 } catch (error) {
@@ -77,35 +79,4 @@ function formatGitMetadata(isPullRequestTriggered) {
     }
   }
   return source
-}
-
-function getLocalsFromModule(module, locals, moduleName) {
-  let blockCnt = 0;
-  let currentBlockLines = "";
-
-  module.split("\n").forEach((line) => {
-    const sanitizedLine = String(line).trim();
-    if (sanitizedLine.startsWith("#")) return;
-
-    if (blockCnt > 0) {
-      currentBlockLines += line;
-    }
-
-    if (blockCnt > 0 && sanitizedLine === "{") {
-      blockCnt++;
-    }
-
-    if (sanitizedLine === "locals {") {
-      currentBlockLines = "";
-      blockCnt = 1;
-    }
-
-    if (sanitizedLine === "}" && blockCnt > 0) {
-      blockCnt--;
-      if (blockCnt === 0) {
-        if (!locals[moduleName]) locals[moduleName] = []
-        locals[moduleName].push(currentBlockLines);
-      }
-    }
-  });
 }
