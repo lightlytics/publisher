@@ -23,7 +23,9 @@ try {
     metadata
   })
     .then(({eventId, customerId}) => {
-      addCommentToPullRequest(`https://${apiUrl}/w/${customerId}/simulations/${eventId}`)
+      if (isPullRequestTriggered) {
+        addCommentToPullRequest(`https://${apiUrl}/w/${customerId}/simulations/${eventId}`)
+      }
       core.setOutput('EventId', eventId);
     })
 } catch (error) {
