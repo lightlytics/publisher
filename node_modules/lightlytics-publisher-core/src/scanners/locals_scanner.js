@@ -4,7 +4,6 @@ export function localsScanner(addData) {
 
   function processLine(line) {
     const sanitizedLine = String(line).trim();
-    if (sanitizedLine.startsWith("#")) return;
 
     if (blockCnt > 0) {
       currentBlockLines += line;
