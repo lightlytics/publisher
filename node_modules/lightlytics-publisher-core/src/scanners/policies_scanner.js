@@ -6,8 +6,6 @@ export function policiesScanner(addData) {
 
   function processLine(line) {
     const sanitizedLine = String(line).trim();
-    // ignore comments
-    if (sanitizedLine.startsWith("#")) return;
 
     // find resource block and count it. increase the block counter each { occurrence
     if (sanitizedLine.startsWith("resource")) {

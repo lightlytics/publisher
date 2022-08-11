@@ -1,19 +1,19 @@
 import got from "got";
 import fs from "fs";
 import path from "path";
-import { localsScanner } from "./scanners/locals_scanner.js";
-import { providersScanner } from "./scanners/providers_scanner.js";
-import { policiesScanner } from "./scanners/policies_scanner.js";
+import {localsScanner} from "./scanners/locals_scanner.js";
+import {providersScanner} from "./scanners/providers_scanner.js";
+import {policiesScanner} from "./scanners/policies_scanner.js";
 import * as constants from "./constants.js";
 
 export async function publish({
-  apiUrl,
-  tfWorkingDir,
-  tfPlan,
-  tfGraph,
-  collectionToken,
-  metadata,
-}) {
+                                apiUrl,
+                                tfWorkingDir,
+                                tfPlan,
+                                tfGraph,
+                                collectionToken,
+                                metadata,
+                              }) {
   const workingDir = tfWorkingDir.replace(/\/$/, "");
 
   const modulesPath = path.normalize(
@@ -74,6 +74,7 @@ export async function publish({
                   break;
               }
             }
+
             return innerAddData;
           }
 
@@ -85,7 +86,16 @@ export async function publish({
             addData("policies", "object")
           );
 
-          moduleContent.split("\n").forEach((line) => {
+          moduleContent.split("\n").forEach((line, index, {length}) => {
+            // ignore comments
+            const sanitizedLine = String(line).trim();
+            if (sanitizedLine.startsWith("#")) return;
+            if (sanitizedLine.startsWith("//")) return;
+
+            if (index + 1 < length) {
+              line += "\n"
+            }
+
             localsProcessor(line);
             providersProcessor(line);
             policiesProcessor(line);
@@ -122,7 +132,7 @@ export async function publish({
   const eventId = response.body.eventId;
   const customerId = response.body.customerId;
 
-  return { eventId, customerId };
+  return {eventId, customerId};
 }
 
 function removeAwsCredentials(plan) {
@@ -135,9 +145,9 @@ function removeAwsCredentials(plan) {
   ) {
     delete plan["configuration"]["provider_config"]["aws"]["expressions"][
       "access_key"
-    ];
+      ];
     delete plan["configuration"]["provider_config"]["aws"]["expressions"][
       "secret_key"
-    ];
+      ];
   }
 }
