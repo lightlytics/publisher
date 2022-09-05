@@ -12,7 +12,13 @@ inputs:
     required: true
   plan-json:
     description: 'Relative path to Terraform plan file (JSON format)'
-    required: true
+    required: false
+  tfc-token:
+    description: 'Optional, Terraform Cloud token used to retrieve terraform plan output'
+    required: false
+  tfc-run-id:
+    description: 'Optional, Terraform Cloud run id that was created after using terraform plan command'
+    required: false
   tf-graph:
     description: 'Relative path to Terraform graph file (dot format)'
     required: false

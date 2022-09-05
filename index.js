@@ -1,6 +1,6 @@
 import core from '@actions/core'
 import github from '@actions/github'
-import {Octokit} from "@octokit/rest";
+import {Octokit} from "@octokit/rest"
 import {publish, poll, getMarkdownComment} from 'lightlytics-publisher-core'
 
 const pollTimeout = 10 // minutes
@@ -10,6 +10,8 @@ try {
   const apiUrl = core.getInput('ll-hostname')
   const tfWorkingDir = core.getInput('working-directory').replace(/\/$/, '')
   const tfPlan = core.getInput('plan-json')
+  const tfcToken = core.getInput('tfc-token')
+  const tfcRunId = core.getInput('tfc-run-id')
   const tfGraph = core.getInput('tf-graph')
   const collectionToken = core.getInput('collection-token')
 
@@ -22,6 +24,8 @@ try {
     tfWorkingDir,
     tfPlan,
     tfGraph,
+    tfcToken,
+    tfcRunId,
     collectionToken,
     metadata
   })
