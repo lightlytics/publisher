@@ -1,11 +1,6 @@
-import type { LowercaseObjectKeys } from "./util/LowercaseObjectKeys.js";
+import type { FormDataEncoderHeaders } from "./util/Headers.js";
 import type { FormDataLike } from "./FormDataLike.js";
 import type { FileLike } from "./FileLike.js";
-interface RawHeaders {
-    "Content-Type": string;
-    "Content-Length"?: string;
-}
-export declare type FormDataEncoderHeaders = Readonly<RawHeaders> & Readonly<LowercaseObjectKeys<RawHeaders>>;
 export interface FormDataEncoderOptions {
     /**
      * When enabled, the encoder will emit additional per part headers, such as `Content-Length`.
@@ -37,7 +32,7 @@ export declare class FormDataEncoder {
     /**
      * Returns headers object with Content-Type and Content-Length header
      */
-    readonly headers: FormDataEncoderHeaders;
+    readonly headers: Readonly<FormDataEncoderHeaders>;
     /**
      * Creates a multipart/form-data encoder.
      *
@@ -159,4 +154,3 @@ export declare class FormDataEncoder {
      */
     [Symbol.asyncIterator](): AsyncGenerator<Uint8Array, void, undefined>;
 }
-export {};
