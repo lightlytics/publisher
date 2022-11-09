@@ -1,6 +1,6 @@
 {
   "name": "lightlytics-publisher-core",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Core shared logic of Lightlytics publisher",
   "main": "src/index.js",
   "type": "module",

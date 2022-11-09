@@ -8,7 +8,7 @@ export function policiesScanner(addData) {
     const sanitizedLine = String(line).trim();
 
     // find resource block and count it. increase the block counter each { occurrence
-    if (sanitizedLine.startsWith("resource")) {
+    if (sanitizedLine.startsWith("resource") || sanitizedLine.startsWith("data")) {
       const splittedLine = sanitizedLine.split('"');
       if (splittedLine.length > 3) {
         resourceName = `${splittedLine[1]}.${splittedLine[3]}`;
@@ -19,7 +19,7 @@ export function policiesScanner(addData) {
     }
 
     // find the policy block and add the block lines to the policyBlockLines
-    if (blockCnt > 0 && sanitizedLine.includes("policy =")) {
+    if (blockCnt > 0 && sanitizedLine.includes("policy =") || sanitizedLine.includes("statement {")) {
       policy = true;
     }
 
@@ -36,6 +36,7 @@ export function policiesScanner(addData) {
       }
       if (blockCnt === 0 && policyBlockLines) {
         addData({ [resourceName]: policyBlockLines });
+        policy = false;
         policyBlockLines = "";
       }
     }
