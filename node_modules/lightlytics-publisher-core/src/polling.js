@@ -40,7 +40,7 @@ export async function poll({
       lastStatus = status.status
       const sortedViolations = (response.body?.violations || [])
         .sort((a, b) =>
-          categoryImportance(b.category) - categoryImportance(a.category) || severityImportance(b.severity) - severityImportance(a.severity)
+          categoryImportance(b.category) - categoryImportance(a.category) || b.severity - a.severity
         )
       onStatusUpdate(status, sortedViolations)
     }
@@ -65,16 +65,18 @@ function categoryImportance(category = "") {
   return 0
 }
 
-function severityImportance(severity = "") {
-  switch (severity.toLowerCase()) {
-    case 'critical':
-      return 3
-    case 'warning':
-      return 2
-    case 'info':
-      return 1
+function severityToString(severity = 1) {
+  switch (severity) {
+    case 4:
+      return 'Critical'
+    case 3:
+      return 'High'
+    case 2:
+      return 'Warning'
+    case 1:
+      return 'Info'
   }
-  return 0
+  return 'Info'
 }
 
 function statusToGithubChecks(status) {
@@ -134,7 +136,7 @@ export function getMarkdownComment(status, violations = [], details_url) {
   let violationSummary = ""
 
   const formatViolation = violation =>
-    `(*${violation.severity}*) "${violation.name}" [${violation.count} occurrences]${violation.fail_simulation ? ' - :x: Failed simulation' : ''}\n`
+    `(*${severityToString(violation.severity)}*) "${violation.name}" [${violation.count} occurrences]${violation.fail_simulation ? ' - :x: Failed simulation' : ''}\n`
 
   let forceFailCount = 0
   let lastCategory = violations[0]?.category
