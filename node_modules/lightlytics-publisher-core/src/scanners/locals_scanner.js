@@ -1,25 +1,25 @@
 export function localsScanner(addData) {
-  let blockCnt = 0;
-  let currentBlockLines = "";
+  let blockCnt = 0
+  let currentBlockLines = ''
 
   function processLine(line) {
-    const sanitizedLine = String(line).trim();
+    const sanitizedLine = String(line).trim()
 
     if (blockCnt > 0) {
-      currentBlockLines += line;
+      currentBlockLines += line
     }
 
-    if (blockCnt > 0 && sanitizedLine === "{") {
-      blockCnt++;
+    if (blockCnt > 0 && sanitizedLine === '{') {
+      blockCnt++
     }
 
-    if (sanitizedLine === "locals {") {
-      currentBlockLines = "";
-      blockCnt = 1;
+    if (sanitizedLine === 'locals {') {
+      currentBlockLines = ''
+      blockCnt = 1
     }
 
-    if (sanitizedLine === "}" && blockCnt > 0) {
-      blockCnt--;
+    if (sanitizedLine === '}' && blockCnt > 0) {
+      blockCnt--
       if (blockCnt === 0) {
         addData(currentBlockLines)
       }
