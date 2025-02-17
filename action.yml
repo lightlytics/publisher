@@ -2,13 +2,13 @@ name: 'Publisher'
 branding:
   icon: 'cloud-lightning'
   color: 'purple'
-description: 'Publishes events to Lightlytics Producer'
+description: 'Publishes events to StreamSec Producer'
 inputs:
   working-directory:
     description: 'Relative path to the directory of which terraform init command executed'
     required: true
   ll-hostname:
-    description: 'Hostname of Lightlytics environment (example: env.lightlytics.com)'
+    description: 'Hostname of StreamSec environment (example: env.streamsec.io)'
     required: true
   plan-json:
     description: 'Relative path to Terraform plan file (JSON format)'
@@ -23,7 +23,7 @@ inputs:
     description: 'Relative path to Terraform graph file (dot format)'
     required: false
   collection-token:
-    description: 'Secret token per customer used for authentication with Lightlytics (stored in GitHub)'
+    description: 'Secret token per customer used for authentication with StreamSec (stored in GitHub)'
     required: true
   github-token:
     description: 'GitHub token used to send a comment on Pull requests'
