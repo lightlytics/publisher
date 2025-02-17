@@ -33,7 +33,7 @@ try {
   const details_url = `https://${apiUrl}/w/${customerId}/simulations/${eventId}`
   const commentText = getCommentToPullRequest(details_url)
 
-  core.setOutput("simulation-details", commentText)
+  core.exportVariable("simulation-details", commentText);
 
   const octokit = new Octokit({
     auth: core.getInput('github-token')
@@ -53,7 +53,7 @@ try {
   // checks:write permission
   const res = await octokit.rest.checks.create({
     ...github.context.repo,
-    name: 'Lightlytics Simulation',
+    name: 'StreamSec Simulation',
     head_sha: source.commit_hash,
     status: 'queued', // queued, in_progress, completed
     details_url,
@@ -94,45 +94,29 @@ try {
     }
   })
 
-  core.setOutput('EventId', eventId)
+  core.exportVariable('EventId', eventId);
 } catch (error) {
-  console.error(error)
-  core.setFailed(error.message)
+  console.error(error);
+  core.setFailed(error.message);
 }
 
 function getCommentToPullRequest(link) {
-  return `**Lightlytics** is processing an execution simulation. The results will be updated when the simulation is complete, [View simulation details](${link})
+  return `**StreamSec** is processing an execution simulation. The results will be updated when the simulation is complete, [View simulation details](${link})
 
 > _This comment was added automatically by a git workflow to help DevOps teams predict what will be the impact of the proposed change after completing this PR_`
 }
 
 function formatGitMetadata(isPullRequestTriggered) {
-  let source = {}
-
-  if (isPullRequestTriggered) {
-    source = {
-      name: 'Github',
-      type: 'Github',
-      format: 'Terraform',
-      branch: github.context.payload.pull_request.head.ref,
-      base_branch: github.context.payload.pull_request.base.ref,
-      commit_hash: github.context.payload.pull_request.head.sha,
-      pr_id: github.context.payload.pull_request.number,
-      repository: github.context.payload.repository.full_name,
-      user_name: github.context.payload.pull_request.user.login
-    }
-  } else {
-    source = {
-      name: 'Github',
-      type: 'Github',
-      format: 'Terraform',
-      branch: github.context.ref.replace('refs/heads/', ''),
-      base_branch: github.context.payload.repository.default_branch,
-      commit_hash: github.context.sha,
-      pr_id: '',
-      repository: github.context.payload.repository.full_name,
-      user_name: github.context.actor
-    }
-  }
-  return source
+  const payload = github.context.payload;
+  return {
+    name: 'Github',
+    type: 'Github',
+    format: 'Terraform',
+    branch: isPullRequestTriggered ? payload.pull_request.head.ref : github.context.ref.replace('refs/heads/', ''),
+    base_branch: isPullRequestTriggered ? payload.pull_request.base.ref : payload.repository.default_branch,
+    commit_hash: isPullRequestTriggered ? payload.pull_request.head.sha : github.context.sha,
+    pr_id: isPullRequestTriggered ? payload.pull_request.number : '',
+    repository: payload.repository.full_name,
+    user_name: isPullRequestTriggered ? payload.pull_request.user.login : github.context.actor
+  };
 }
